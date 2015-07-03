@@ -33,15 +33,11 @@ void print_table_body()
     exit(-1);
   }
 
+  int int_val;
+  double double_val;
   int row_num = 1;
   /* Read until there are no more data to read or stream fails. */
-  while(true) {
-    int int_val;
-    double double_val;
-
-    input >> int_val >> double_val;
-    if (input.fail()) break; // loop-and-a-half idiom
-
+  while (input >> int_val >> double_val) {
     cout << setw(COL_WIDTH) << row_num++ << " | ";
     cout << setw(COL_WIDTH) << int_val << " | ";
     cout << setw(COL_WIDTH) << double_val << endl;
