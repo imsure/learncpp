@@ -12,6 +12,11 @@
 
 using namespace std;
 
+// 
+const int LEFT_MOST_INTERVAL = 2;
+const int RIGHT_MOST_INTERVAL = 2;
+const int UNIT_DISTANCE_LAST_ROW = 4;
+
 /**
  * The mathematical combinations.
  */
@@ -29,25 +34,56 @@ int get_num_digit(int value)
   else return 1 + get_num_digit(value/10);
 }
 
-void pascal_triangle(int depth)
+static void print_row(int row_num, int left_most_adjustment, int right_most_adjustment)
 {
-  int left_adjust;
-  int num_digit;
-  int value;
-  
-  for (int n = 0; n < depth; ++n) {
-    left_adjust = (depth - n) * 2;
-    for (int k = 0; k <= n; ++k) {
-      value = combinations(n, k);
-      if (k == 0) {
-	cout << setw(left_adjust) << value;
+  vector<int> values;
+  int v, num_digit;
+  int row_len = 0;
+
+  if (row_num == 0) {
+    cout << setw(left_most_adjustment) << 1 << endl;
+    return;
+  }
+
+  if (left_most_adjustment == 0) { // last row
+    v = combinations(row_num, 0);
+    values.push_back(v);
+    row_len += 1;
+    
+    for (int k = 1; k <= row_num; ++k) {
+      v = combinations(row_num, k);
+      values.push_back(v);
+      num_digit = get_num_digit(v);
+      row_len += 4; // 4 whitespace intervals for the last row
+    }
+    print_row(row_num-1, left_most_adjustment+3, row_len-2);
+    cout << setw(left_most_adjustment) << 1;
+    for (int i = 1; i < values.size()-1; ++i) {
+      cout << setw(4) << values[i];
+    }
+    cout << setw(row_len - 4*(values.size()-2) - 1) << 1 << endl;
+  } else {
+    print_row(row_num-1, left_most_adjustment+2, right_most_adjustment-2);
+    cout << setw(left_most_adjustment) << 1;
+    // distance between first and last element.
+    int distance = right_most_adjustment - left_most_adjustment - 1;
+    int unit_distance = distance / row_num;
+    int left_over = distance % row_num;
+    for (int i = 1; i < row_num; ++i) {
+      if (left_over > 0) {
+	cout << setw(unit_distance+1) << combinations(row_num, i);
+	left_over--;
       } else {
-	num_digit = get_num_digit(value);
-	cout << setw(num_digit+3) << value;
+	cout << setw(unit_distance) << combinations(row_num, i);
       }
     }
-    cout << endl;
+    cout << setw(right_most_adjustment-left_most_adjustment-distance+unit_distance) << 1 << endl;
   }
+}
+
+void print_pascal_triangle(int depth)
+{
+  print_row(depth-1, 0, 0);
 }
 
 /**
@@ -61,7 +97,7 @@ int main( int argc, char *argv[] )
   //   }
   // }
 
-  pascal_triangle(10);
+  print_pascal_triangle(10);
   return 0;
 }
 
