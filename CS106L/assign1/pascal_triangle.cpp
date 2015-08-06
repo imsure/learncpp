@@ -12,10 +12,14 @@
 
 using namespace std;
 
-// 
-const int LEFT_MOST_INTERVAL = 2;
-const int RIGHT_MOST_INTERVAL = 2;
-const int UNIT_DISTANCE_LAST_ROW = 4;
+// Distance between left most elements of two adjacent rows.
+const int LEFT_MOST_DISTANCE = 2;
+// Distance between right most elements of two adjacent rows.
+const int RIGHT_MOST_DISTANCE = 2;
+// Minimum unit distance between two adjacent elements of the last row.
+const int MIN_UNIT_DISTANCE_LAST_ROW = 4;
+
+int space_adjustment;
 
 /**
  * The mathematical combinations.
@@ -34,38 +38,81 @@ int get_num_digit(int value)
   else return 1 + get_num_digit(value/10);
 }
 
+static int unit_distance_last_row(int row_num)
+{
+  int mid_element_index = row_num / 2 + row_num % 2;
+  int value = combinations(row_num, mid_element_index);
+  int num_digit = get_num_digit(value);
+  return num_digit >= MIN_UNIT_DISTANCE_LAST_ROW? num_digit+1 : MIN_UNIT_DISTANCE_LAST_ROW;
+}
+
+/**
+ *      1
+ *    1   1
+ * 1 ....... 1
+ */
+static int adjust_last_row_len(int last_row_len, int num_rows)
+{
+  int num_ones = 0;
+
+  num_ones = (num_rows-1)*2 + 1;
+
+  int total_space = last_row_len - num_ones; // total whitespaces can be divided.
+  while (total_space % (2*(num_rows-1))) {
+    last_row_len++;
+    total_space = last_row_len - num_ones; // total whitespaces can be divided.
+  }
+
+  return last_row_len;
+}
+
 static void print_row(int row_num, int left_most_adjustment, int right_most_adjustment)
 {
   vector<int> values;
   int v, num_digit;
-  int row_len = 0;
 
-  if (row_num == 0) {
+  if (row_num == 0) { // Base case
     cout << setw(left_most_adjustment) << 1 << endl;
     return;
   }
 
-  if (left_most_adjustment == 0) { // last row
+  if (left_most_adjustment == 0) { // Processing the last row.
+    int row_len = 0;
     v = combinations(row_num, 0);
     values.push_back(v);
     row_len += 1;
+
+    // Get the unit distance between two adjacent elements.
+    int unit_distance = unit_distance_last_row(row_num);
     
     for (int k = 1; k <= row_num; ++k) {
       v = combinations(row_num, k);
       values.push_back(v);
-      num_digit = get_num_digit(v);
-      row_len += 4; // 4 whitespace intervals for the last row
+      row_len += unit_distance;
     }
-    print_row(row_num-1, left_most_adjustment+3, row_len-2);
+
+    // Adjust the length of last row.
+    row_len = adjust_last_row_len(row_len, row_num+1);
+    int num_ones = row_num*2 + 1;
+    space_adjustment = (row_len-num_ones) / (2*(row_num));
+    space_adjustment++;
+
+    // Debug:
+    cout << "unit distance between elements of last row= " << unit_distance << endl;
+    cout << "# rows: " << row_num+1 << ", last row length: " << row_len << endl;
+    cout << "space adjustment between two outmost 1s: " << space_adjustment << endl;
+
+    print_row(row_num-1, left_most_adjustment+space_adjustment+1, row_len-space_adjustment);
     cout << setw(left_most_adjustment) << 1;
+    unit_distance = (row_len-1) / row_num; // re-adjust
     for (int i = 1; i < values.size()-1; ++i) {
-      cout << setw(4) << values[i];
+      cout << setw(unit_distance) << values[i];
     }
-    cout << setw(row_len - 4*(values.size()-2) - 1) << 1 << endl;
-  } else {
-    print_row(row_num-1, left_most_adjustment+2, right_most_adjustment-2);
+    cout << setw(row_len - unit_distance*(values.size()-2) - 1) << 1 << endl;
+  } else { // Processing rows above the last row.
+    print_row(row_num-1, left_most_adjustment+space_adjustment, right_most_adjustment-space_adjustment);
     cout << setw(left_most_adjustment) << 1;
-    // distance between first and last element.
+    // Distance between first and last element.
     int distance = right_most_adjustment - left_most_adjustment - 1;
     int unit_distance = distance / row_num;
     int left_over = distance % row_num;
@@ -91,13 +138,7 @@ void print_pascal_triangle(int depth)
  */
 int main( int argc, char *argv[] )
 {
-  // for (int n = 0; n <= 7; ++n) {
-  //   for (int k = 0; k <= n; ++k) {
-  //     cout << "c(" << n << "," << k << ") = " << combinations(n, k) << endl;
-  //   }
-  // }
-
-  print_pascal_triangle(10);
+  print_pascal_triangle(20);
   return 0;
 }
 
