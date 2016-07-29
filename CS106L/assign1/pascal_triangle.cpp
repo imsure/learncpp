@@ -1,5 +1,5 @@
 /**
- * A short and concise description goes here.
+ * Print out a pascal triangle beautifully.
  * *************************************************
  *
  * Author: Shuo Yang
@@ -12,17 +12,12 @@
 
 using namespace std;
 
-// Distance between left most elements of two adjacent rows.
-const int LEFT_MOST_DISTANCE = 2;
-// Distance between right most elements of two adjacent rows.
-const int RIGHT_MOST_DISTANCE = 2;
-// Minimum unit distance between two adjacent elements of the last row.
 const int MIN_UNIT_DISTANCE_LAST_ROW = 4;
 
 int space_adjustment;
 
 /**
- * The mathematical combinations.
+ * Calculate the mathematical combinations c(n,k).
  */
 int combinations(int n, int k)
 {
@@ -32,12 +27,19 @@ int combinations(int n, int k)
   return combinations(n-1, k-1) + combinations(n-1, k);
 }
 
+/**
+ * Get the number of digits in 'value'.
+ */
 int get_num_digit(int value)
 {
   if (value < 10) return 1;
   else return 1 + get_num_digit(value/10);
 }
 
+/**
+ * Calculate the distance between two adjacent elements
+ * of the last row.
+ */
 static int unit_distance_last_row(int row_num)
 {
   int mid_element_index = row_num / 2 + row_num % 2;
@@ -47,6 +49,9 @@ static int unit_distance_last_row(int row_num)
 }
 
 /**
+ * Adjust the length of the last row such that we can place
+ * the border (all 1s) evenly.
+ *
  *      1
  *    1   1
  * 1 ....... 1
@@ -66,6 +71,9 @@ static int adjust_last_row_len(int last_row_len, int num_rows)
   return last_row_len;
 }
 
+/** 
+ * Recursively print out each row of a pascal triangle.
+ */
 static void print_row(int row_num, int left_most_adjustment, int right_most_adjustment)
 {
   vector<int> values;
